@@ -21,10 +21,10 @@
   <div id="request">Incorrect</div>
 {% endif %}
     <form class="form-signin" method="POST" action="/spell_check">
-        {{ form.csrf_token }}
-        {{ wtf.form_field(form.inputtext) }}
+        {{ spell_check_form.csrf_token }}
+        {{ wtf.form_field(spell_check_form.inputtext) }}
         <ul>
-        {% for error in form.inputtext.errors %}
+        {% for error in spell_check_form.inputtext.errors %}
             <li style=“color:red;”>{{ error }}</li>
         {% endfor %}
         </ul>

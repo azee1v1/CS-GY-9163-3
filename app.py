@@ -24,11 +24,26 @@ class User(db.Model):
     twofa = db.Column(db.String(15))
     datecreated = db.Column(db.DateTime, default=datetime.now)
 
+class History(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(15))
+    queryhistory = db.Column(db.String(15))
+    queryresults = db.Column(db.String(15))
+    datecreated = db.Column(db.DateTime, default=datetime.now)
+
+class Login_History(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(15))
+    logouttime = db.Column(db.DateTime)
+    datecreated = db.Column(db.DateTime, default=datetime.now)
+
 class LoginForm(FlaskForm):
     uname = StringField('username', validators=[InputRequired('Incorrect'), Length(min=4, max=15)])
     pword = PasswordField('password', validators=[InputRequired('Incorrect'), Length(min=8, max=80)])
     twofa = StringField('twofa', validators=[InputRequired('Two-factor failure'), Length(min=10, max=15)], id='2fa')
 
+class LoginHistoryForm(FlaskForm):
+    uname = StringField('username', validators=[InputRequired('Incorrect'), Length(min=4, max=15)])
 
 #    remember = BooleanField('remember me')
 
@@ -54,13 +69,34 @@ def index():
 
     return redirect(url_for('register'))
 
-@app.route('/history', methods=['GET', 'POST'])
+@app.route('/history')
 def history():
-    if 'user' in session:
-        queries = User.query.filter_by(username=request.form['uname']).all()
-
+    if g.user:
+        queries = History.query.filter_by(username=g.user).all()
+        totalnumqueries = History.query.filter_by(username=g.user).count()
+        return render_template('history.html', queries=queries, totalnumqueries=totalnumqueries)
     return redirect(url_for('login'))
 
+@app.route('/history/<id>')
+def historybyid(id):
+    queries = History.query.filter_by(id=id).first()
+    if g.user == queries.username | g.user == "admin":
+        totalnumqueries = 1
+        return render_template('history.html', queries=queries, totalnumqueries=totalnumqueries)
+    return redirect(url_for('login'))
+
+
+@app.route('/login_history', methods=['GET', 'POST'])
+def login_history():
+    loginhistory_form = LoginHistoryForm()
+
+    if g.user == "admin" and request.method == 'POST' and loginhistory_form.validate():
+        login_history_query = Login_History.query.filter_by(username=loginhistory_form.uname.data).all()
+        username = loginhistory_form.uname.data
+        # totalnumqueries = User.query.filter_by(username=g.user).count()
+        return render_template('loginhistory.html', loginhistory_form=loginhistory_form, login_history_query=login_history_query)
+    return render_template('loginhistory.html', loginhistory_form=loginhistory_form)
+    # return redirect(url_for('login'))
 
 
 # User registration: /your/webroot/register
@@ -68,14 +104,29 @@ def history():
 def register():
     request_form = RegisterForm()
 
+    db.create_all()
+
+    exists = User.query.filter_by(username="admin").first()
+    if not exists:
+        set_admin = User(username="admin", password="Administrator@1", twofa="12345678901")
+        db.create_all()
+        db.session.add(set_admin)
+        db.session.commit()
+
     if request.method == 'POST' and request_form.validate():
-        session['user'] = request.form['uname']
-        session['password'] = request.form['pword']
-        session['twofa'] = request.form['twofa']
+        # session['user'] = request.form['uname']
+        # session['password'] = request.form['pword']
+        # session['twofa'] = request.form['twofa']
 
         new_user = User(username=request.form['uname'], password=request.form['pword'], twofa=request.form['twofa'])
+        db.create_all()
         db.session.add(new_user)
         db.session.commit()
+
+        # new_history = History(username=request.form['uname'], queryhistory="Test test")
+        # db.create_all()
+        # db.session.add(new_history)
+        # db.session.commit()
 
         # form.validate_on_submit():
         success = "success"
@@ -87,31 +138,44 @@ def register():
     return render_template('register.html', request_form=request_form)
 
 
-# User login: /your/webroot/login
+# User login: /your/webroot/loginetsession
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 
     login_form = LoginForm()
 
-    # if form.validate_on_submit():
-    if 'user' in session:
-        if request.method == 'POST' and login_form.validate() and session['user'] == login_form.uname.data and session['password'] == login_form.pword.data and session['twofa'] == login_form.twofa.data:
+    db.create_all()
 
-            session['user'] = request.form['uname']
+    exists = User.query.filter_by(username="admin").first()
+    if not exists:
+        set_admin = User(username="admin", password="Administrator@1", twofa="12345678901")
+        db.create_all()
+        db.session.add(set_admin)
+        db.session.commit()
+
+    # if form.validate_on_submit():
+    # if 'user' in session:
+
+    new_login = User.query.filter_by(username=login_form.uname.data).first()
+    if new_login:
+        if new_login.password == login_form.pword.data and new_login.twofa == login_form.twofa.data:
+
+
+        # if request.method == 'POST' and login_form.validate() and session['user'] == login_form.uname.data and session['password'] == login_form.pword.data and session['twofa'] == login_form.twofa.data:
+
+            session['user'] = login_form.uname.data
             result = "success"
+
+            set_history_login = Login_History(username=login_form.uname.data)
+            db.create_all()
+            db.session.add(set_history_login)
+            db.session.commit()
+
             # return '<div id="request">success Proceed to Spell Check page<a href="/spell_check">Spell Check</a></div>'
 
-            return redirect(url_for('spell_check'))
-            # return '<h1>The username is {}. The password is {}. 2fa is {} {} {} {}'.format(login_form.uname.data,
-            #                                                                                login_form.pword.data,
-            #                                                                                login_form.twofa.data,
-            #                                                                                session['user'],
-            #                                                                                session['password'],
-            #                                                                                session['twofa'])
-            #                                                                                # request.request_form.uname.data,
-            #                                                                                # pwtemp,
-            #                                                                                # twofatemp)
-        result = "failure"
+        return redirect(url_for('spell_check'))
+
+    result = "failure"
     # return '<div id="result">failure</div>'
     return render_template('login.html', login_form=login_form)
 
@@ -141,17 +205,33 @@ def dropsession():
 @app.route('/spell_check', methods=['GET', 'POST'])
 def spell_check():
     if g.user:
-        form = SpellCheckForm()
+        spell_check_form = SpellCheckForm()
 
-        if request.method == 'POST' and form.validate():
-            return '<div id="success">success</div>'
-            inputTextString = login_form.inputtext.data
+        if request.method == 'POST' and spell_check_form.validate():
+            # return '<div id="success">success</div>'
+            # inputTextString = login_form.inputtext.data
+            inputTextString = request.form['inputtext']
+            # inputTextString = spell_check_form.inputtext.data
+
+
+            # new_user = History(username=request.form['uname'], queryhistory=login_form.inputtext.data)
+
+            #new_history = History(username=request.form['uname'], queryhistory=inputTextString)
+            db.create_all()
+
+            new_history = History(username=g.user, queryhistory=inputTextString)
+            db.create_all()
+            db.session.add(new_history)
+            db.session.commit()
+
+
+            return '<div id="success">{}</div>'.format(inputTextString)
             checkspell = ctypes.cdll('a.o')
             checkspell.argtypes(ctypes.c_char_p)
             misspelledString = checkspell.check_words(inputTextString)
             return '<h1 id="misspelled">Misspelled words are {}.'.format(misspelledString)
 
-        return render_template('spell_check.html', form=form)
+        return render_template('spell_check.html', spell_check_form=spell_check_form)
     return redirect(url_for('login'))
 
 

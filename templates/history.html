@@ -1,7 +1,7 @@
 {% extends "bootstrap/base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}Login page{% endblock %}
+{% block title %}History page{% endblock %}
 {% block styles %}
 {{ super() }}
 {% endblock %}
@@ -12,29 +12,15 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-    <div id="result">{{ result }}</div>
-        {{ login_form.csrf_token }}
+    <div class="container">{{ totalnumqueries }}
+    <div id="numqueries">{{ totalnumqueries }}</div>
         <ul>
-        {% for error in login_form.uname.errors %}
-            <li style=“color:red;”><div id="result">Incorrect</div>{{ error }}</li>
+        {% for username in queries %}
+            <li style=“color:blue;”><div id="queryid">Query ID: {{ queries.id }}</div></li>
+            <li style=“color:blue;”><div id="username">Username: {{ queries.username }}</div></li>
+        <li style=“color:blue;”><div id="querytext">Query text: {{ queries.queryhistory }}</div></li>
+            <li style=“color:blue;”><div id="queryresults">Query Results: {{ queries.queryresults }}</div></li>
         {% endfor %}
         </ul>
-        {{ wtf.form_field(login_form.pword) }}
-            <ul>
-        {% for error in login_form.pword.errors %}
-            <li style=“color:red;”><div id="result">Incorrect</div>{{ error }}</li>
-        {% endfor %}
-        </ul>
-        {{ wtf.form_field(login_form.twofa) }}
-            <ul>
-        {% for error in login_form.twofa.errors %}
-            <li style=“color:red;”><div id="result">Two-factor failure</div>{{ error }}</li>
-        {% endfor %}
-        </ul>
-        <h2 class="form-signin-heading">Sign Up</h2>
-    <button type="submit">Log in</button>
-
-
- </div>
+    </div>
 {% endblock %}

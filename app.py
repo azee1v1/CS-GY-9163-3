@@ -72,17 +72,20 @@ def index():
 @app.route('/history')
 def history():
     if g.user:
-        queries = History.query.filter_by(username=g.user).all()
+        db.create_all()
+        queries = History.query.filter((History.username == g.user) | (g.user == 'admin')).all()
         totalnumqueries = History.query.filter_by(username=g.user).count()
         return render_template('history.html', queries=queries, totalnumqueries=totalnumqueries)
     return redirect(url_for('login'))
 
 @app.route('/history/<id>')
 def historybyid(id):
-    queries = History.query.filter_by(id=id).first()
-    if g.user == queries.username | g.user == "admin":
-        totalnumqueries = 1
-        return render_template('history.html', queries=queries, totalnumqueries=totalnumqueries)
+    db.create_all()
+    queries = History.query.filter_by(id=id).all()
+    for query in queries:
+        if g.user == query.username or g.user == "admin":
+            totalnumqueries = 1
+            return render_template('history.html', queries=queries, totalnumqueries=totalnumqueries)
     return redirect(url_for('login'))
 
 

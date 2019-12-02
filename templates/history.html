@@ -15,12 +15,12 @@
     <div class="container">{{ totalnumqueries }}
     <div id="numqueries">{{ totalnumqueries }}</div>
         <ul>
-        {% for username in queries %}
-            <li style=“color:blue;”><div id="queryid">Query ID: {{ queries.id }}</div></li>
-            <li style=“color:blue;”><div id="username">Username: {{ queries.username }}</div></li>
-        <li style=“color:blue;”><div id="querytext">Query text: {{ queries.queryhistory }}</div></li>
-            <li style=“color:blue;”><div id="queryresults">Query Results: {{ queries.queryresults }}</div></li>
-        {% endfor %}
+            {%- for query in queries %}
+                <li style=“color:blue;”><div id="queryid">Query ID: {{ query.id }}</div></li>
+                <li style=“color:blue;”><div id="username">Username: {{ query.username }}</div></li>
+            <li style=“color:blue;”><div id="querytext">Query text: {{ query.queryhistory }}</div></li>
+                <li style=“color:blue;”><div id="queryresults">Query Results: {{ query.queryresults }}</div></li>
+            {%- endfor %}
         </ul>
     </div>
 {% endblock %}

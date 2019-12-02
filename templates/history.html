@@ -16,7 +16,7 @@
     <div id="numqueries">{{ totalnumqueries }}</div>
         <ul>
             {%- for query in queries %}
-                <li style=“color:blue;”><div id="queryid">Query ID: {{ query.id }}</div></li>
+                <li style=“color:blue;”><a href="/history/{{ query.id }}"><div id="queryid{{ query.id }}">Query ID: {{ query.id }}</div></a></li>
                 <li style=“color:blue;”><div id="username">Username: {{ query.username }}</div></li>
             <li style=“color:blue;”><div id="querytext">Query text: {{ query.queryhistory }}</div></li>
                 <li style=“color:blue;”><div id="queryresults">Query Results: {{ query.queryresults }}</div></li>

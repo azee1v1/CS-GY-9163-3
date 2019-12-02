@@ -13,6 +13,15 @@
 
 {% block content %}
     <div class="container">{{ totalnumqueries }}
+        <form id="userquery" class="form-signin" method="POST" action="/history">
+        {{ history_form.csrf_token }}
+        <div id="userid">
+            {{ wtf.form_field(history_form.uname) }}
+        </div>
+        <div id="Submit"></div>
+
+            <button type="submit">Submit</button>
+        </form>
     <div id="numqueries">{{ totalnumqueries }}</div>
         <ul>
             {%- for query in queries %}

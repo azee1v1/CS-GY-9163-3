@@ -45,7 +45,9 @@ class LoginForm(FlaskForm):
 class LoginHistoryForm(FlaskForm):
     uname = StringField('username', validators=[InputRequired('Incorrect'), Length(min=4, max=15)])
 
-#    remember = BooleanField('remember me')
+
+class HistoryForm(FlaskForm):
+    uname = StringField('username', validators=[InputRequired('Incorrect'), Length(min=4, max=15)])
 
 
 def validate_uname(self, uname):
@@ -69,13 +71,21 @@ def index():
 
     return redirect(url_for('register'))
 
-@app.route('/history')
+@app.route('/history', methods=['GET', 'POST'])
 def history():
+
+    history_form = HistoryForm()
+
+    if g.user == 'admin' and request.method == 'POST' and history_form.validate():
+        db.create_all()
+        queries = History.query.filter(History.username == history_form.uname.data).all()
+        totalnumqueries = History.query.filter_by(username=history_form.uname.data).count()
+        return render_template('history.html', queries=queries, totalnumqueries=totalnumqueries, history_form=history_form)
     if g.user:
         db.create_all()
         queries = History.query.filter((History.username == g.user) | (g.user == 'admin')).all()
         totalnumqueries = History.query.filter_by(username=g.user).count()
-        return render_template('history.html', queries=queries, totalnumqueries=totalnumqueries)
+        return render_template('history.html', queries=queries, totalnumqueries=totalnumqueries, history_form=history_form)
     return redirect(url_for('login'))
 
 @app.route('/history/<id>')

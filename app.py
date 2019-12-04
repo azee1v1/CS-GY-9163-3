@@ -27,8 +27,8 @@ class User(db.Model):
 class History(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15))
-    queryhistory = db.Column(db.String(15))
-    queryresults = db.Column(db.String(15))
+    queryhistory = db.Column(db.String(255))
+    queryresults = db.Column(db.String(255))
     datecreated = db.Column(db.DateTime, default=datetime.now)
 
 class Login_History(db.Model):
@@ -63,7 +63,7 @@ class RegisterForm(FlaskForm):
     twofa = StringField('twofa', validators=[InputRequired('Two-factor failure'), Length(min=10, max=15)], id='2fa')
 
 class SpellCheckForm(FlaskForm):
-    inputtext = StringField('SpellCheck', validators=[InputRequired(message='Check Spelling'), Length(min=4, max=15)])
+    inputtext = StringField('SpellCheck', validators=[InputRequired(message='Check Spelling'), Length(min=4, max=255)])
 
 
 @app.route('/', methods=['GET', 'POST'])

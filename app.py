@@ -88,14 +88,18 @@ def history():
         return render_template('history.html', queries=queries, totalnumqueries=totalnumqueries, history_form=history_form)
     return redirect(url_for('login'))
 
-@app.route('/history/<id>')
+
+@app.route('/history/query<id>', methods=['GET'])
 def historybyid(id):
-    db.create_all()
-    queries = History.query.filter_by(id=id).all()
-    for query in queries:
-        if g.user == query.username or g.user == "admin":
-            totalnumqueries = 1
-            return render_template('history.html', queries=queries, totalnumqueries=totalnumqueries)
+
+    history_form = HistoryForm()
+    if request.method == 'GET':
+        db.create_all()
+        queries = History.query.filter_by(id=id).all()
+        for query in queries:
+            if g.user == query.username or g.user == "admin":
+                totalnumqueries = 1
+                return render_template('history.html', queries=queries, totalnumqueries=totalnumqueries, history_form=history_form)
     return redirect(url_for('login'))
 
 
